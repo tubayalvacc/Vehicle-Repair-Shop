@@ -1,4 +1,5 @@
 <?php
+//AUTHOR-MADE BY TUĞBA YALVAÇ MOHAMMED
 require_once '../config/database.php';
 require_once '../utils/functions.php';
 
@@ -11,20 +12,18 @@ class Shops {
     }
 
     public function create($data) {
-        $query = "INSERT INTO " . $this->table_name . " (name, address, phone, email) VALUES (:name, :address, :phone, :email)";
-
+        $query = "INSERT INTO " . $this->table_name . " (name, location) VALUES (:name, :location)";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':name', $data['name']);
-        $stmt->bindParam(':address', $data['address']);
-        $stmt->bindParam(':phone', $data['phone']);
-        $stmt->bindParam(':email', $data['email']);
+        $stmt->bindParam(':location', $data['location']);
 
         if ($stmt->execute()) {
             return true;
+        } else {
+            echo json_encode(["message" => "Shop creation failed!", "error" => $stmt->errorInfo()]);
+            return false;
         }
-
-        return false;
     }
 
     public function read() {
@@ -32,87 +31,81 @@ class Shops {
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
 
-        return $stmt;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function update($id, $data) {
-        $query = "UPDATE " . $this->table_name . " SET name = :name, address = :address, phone = :phone, email = :email WHERE id = :id";
-
+        $query = "UPDATE " . $this->table_name . " SET name = :name, location = :location WHERE shopID = :id";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':name', $data['name']);
-        $stmt->bindParam(':address', $data['address']);
-        $stmt->bindParam(':phone', $data['phone']);
-        $stmt->bindParam(':email', $data['email']);
+        $stmt->bindParam(':location', $data['location']);
         $stmt->bindParam(':id', $id);
 
         if ($stmt->execute()) {
             return true;
+        } else {
+            echo json_encode(["message" => "Shop update failed!", "error" => $stmt->errorInfo()]);
+            return false;
         }
-
-        return false;
     }
 
     public function delete($id) {
-        $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
-
+        $query = "DELETE FROM " . $this->table_name . " WHERE shopID = :id";
         $stmt = $this->conn->prepare($query);
-
         $stmt->bindParam(':id', $id);
 
         if ($stmt->execute()) {
             return true;
+        } else {
+            echo json_encode(["message" => "Shop deletion failed!", "error" => $stmt->errorInfo()]);
+            return false;
         }
-
-        return false;
     }
 }
 
-// Usage
+// Instantiate Database and Shops classes
 $database = new Database();
 $db = $database->getConnection();
-
 $shops = new Shops($db);
+
+// Handle request
+header('Content-Type: application/json');
+$request = json_decode(file_get_contents("php://input"));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         'name' => validateInput($_POST['name']),
-        'address' => validateInput($_POST['address']),
-        'phone' => validateInput($_POST['phone']),
-        'email' => validateInput($_POST['email'])
+        'location' => validateInput($_POST['location'])
     ];
 
     if ($shops->create($data)) {
-        jsonResponse(['message' => 'Shop created successfully.']);
+        echo json_encode(["message" => "Shop created successfully!"]);
     } else {
-        jsonResponse(['message' => 'Shop creation failed.'], 400);
+        echo json_encode(["message" => "Shop creation failed!"]);
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $stmt = $shops->read();
-    $shops_arr = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    jsonResponse($shops_arr);
+    echo json_encode($shops->read());
 } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     parse_str(file_get_contents("php://input"), $_PUT);
-    $id = validateInput($_PUT['id']);
+    $id = validateInput($_PUT['shopID']);
     $data = [
         'name' => validateInput($_PUT['name']),
-        'address' => validateInput($_PUT['address']),
-        'phone' => validateInput($_PUT['phone']),
-        'email' => validateInput($_PUT['email'])
+        'location' => validateInput($_PUT['location'])
     ];
 
     if ($shops->update($id, $data)) {
-        jsonResponse(['message' => 'Shop updated successfully.']);
+        echo json_encode(["message" => "Shop updated successfully!"]);
     } else {
-        jsonResponse(['message' => 'Shop update failed.'], 400);
+        echo json_encode(["message" => "Shop update failed!"]);
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     parse_str(file_get_contents("php://input"), $_DELETE);
-    $id = validateInput($_DELETE['id']);
+    $id = validateInput($_DELETE['shopID']);
 
     if ($shops->delete($id)) {
-        jsonResponse(['message' => 'Shop deleted successfully.']);
+        echo json_encode(["message" => "Shop deleted successfully!"]);
     } else {
-        jsonResponse(['message' => 'Shop deletion failed.'], 400);
+        echo json_encode(["message" => "Shop deletion failed!"]);
     }
 }

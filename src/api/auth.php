@@ -1,5 +1,7 @@
 <?php
+//AUTHOR-MADE BY TUĞBA YALVAÇ MOHAMMED
 require_once '../config/database.php';
+require_once '../utils/functions.php';
 
 class Auth {
     private $conn;
@@ -9,18 +11,15 @@ class Auth {
         $this->conn = $db;
     }
 
-    public function register($username, $password) {
-        $query = "INSERT INTO " . $this->table_name . " (username, password) VALUES (:username, :password)";
+    public function register($username, $email, $password) {
+        $query = "INSERT INTO " . $this->table_name . " (username, email, password) VALUES (:username, :email, :password)";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':email', $email);
         $stmt->bindParam(':password', password_hash($password, PASSWORD_BCRYPT));
 
-        if ($stmt->execute()) {
-            return true;
-        }
-
-        return false;
+        return $stmt->execute();
     }
 
     public function login($username, $password) {
@@ -32,28 +31,45 @@ class Auth {
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (password_verify($password, $user['password'])) {
-            return $user;
-        }
-
-        return false;
+        return ($user && password_verify($password, $user['password'])) ? $user : false;
     }
 }
 
-// Usage
+// Instantiate Database and Auth classes
 $database = new Database();
 $db = $database->getConnection();
-
 $auth = new Auth($db);
 
-// Example of handling a registration request
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+// Handle request
+header('Content-Type: application/json');
+$request = json_decode(file_get_contents("php://input"));
 
-    if ($auth->register($username, $password)) {
-        echo "User registered successfully.";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = isset($_GET['action']) ? $_GET['action'] : '';
+
+    if ($action === 'register') {
+        $username = isset($request->username) ? $request->username : '';
+        $email = isset($request->email) ? $request->email : '';
+        $password = isset($request->password) ? $request->password : '';
+
+        if ($auth->register($username, $email, $password)) {
+            echo json_encode(["message" => "User registered successfully!"]);
+        } else {
+            echo json_encode(["message" => "User registration failed!"]);
+        }
+    } elseif ($action === 'login') {
+        $username = isset($request->username) ? $request->username : '';
+        $password = isset($request->password) ? $request->password : '';
+
+        $user = $auth->login($username, $password);
+        if ($user) {
+            echo json_encode(["message" => "Login successful!", "user" => $user]);
+        } else {
+            echo json_encode(["message" => "Login failed!"]);
+        }
     } else {
-        echo "User registration failed.";
+        echo json_encode(["message" => "Invalid action!"]);
     }
+} else {
+    echo json_encode(["message" => "Invalid request method!"]);
 }

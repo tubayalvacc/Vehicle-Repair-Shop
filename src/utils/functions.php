@@ -1,4 +1,5 @@
 <?php
+//AUTHOR-MADE BY TUĞBA YALVAÇ MOHAMMED
 function loadEnv($filePath) {
     if (!file_exists($filePath)) {
         throw new Exception("Env file not found.");

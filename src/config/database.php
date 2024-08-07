@@ -1,4 +1,5 @@
 <?php
+//AUTHOR-MADE BY TUĞBA YALVAÇ MOHAMMED
 require_once __DIR__ . '/../utils/functions.php';
 
 // Load environment variables
