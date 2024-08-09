@@ -1,9 +1,12 @@
 <?php
 //AUTHOR-MADE BY TUĞBA YALVAÇ MOHAMMED
+
+// Include the database configuration file and utility functions
 require_once '../config/database.php';
 require_once '../utils/functions.php';
 
 class Auth {
+    // Declare private variables to store database connection and table name
     private $conn;
     private $table_name = "users";
 
