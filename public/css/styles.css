@@ -52,6 +52,75 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/*------------------TUGBA YALVAC MOHAMMED----------------------------------*/
+/* Adjust navbar layout */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 13vh;
+    width: 90%;
+    margin: auto;
+    position: relative;
+}
+
+/* Create a container for the logo and nav items */
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Adjust the icons container */
+.icons {
+    margin-right: 20px; /* Add some space between icons and login button */
+}
+
+/* Login button styles */
+.login-btn {
+    background-color: transparent;
+    border: 2px solid yellow;
+    color: yellow;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-btn:hover {
+    background-color: yellow;
+    color: black;
+}
+
+.login-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            120deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent
+    );
+    transition: all 0.4s;
+}
+
+.login-btn:hover::before {
+    left: 100%;
+}
+
+/* Container for icons and login button */
+.nav-right {
+    display: flex;
+    align-items: center;
+}
 /*----------------------------------------------------*/
 
 
